@@ -8,9 +8,9 @@ import org.apache.beam.sdk.values.PCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Task {
+public class readOptions {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Task.class);
+    private static final Logger LOG = LoggerFactory.getLogger(readOptions.class);
 
     public interface MyOptions extends PipelineOptions {
         @Description("Path of the file to read from")
@@ -34,17 +34,23 @@ public class Task {
         Pipeline pipeline = Pipeline.create(options);
 
         PCollection<String> output = pipeline.apply("ReadLines", TextIO.read().from(options.getInputFile()))
-                .apply(Filter.by((String line) -> !line.isEmpty()));
+                .apply(Filter.by(containsName("Reg")));
 
-        output.apply("Log", ParDo.of(new LogOutput<>()));
+        // sum the number of lines that contain "William"
+        output.apply(Count.globally())
+                .apply(ParDo.of(new LogOutput<>()));
 
-        // Ensure the output is written to a single file with a specific name
         output.apply("WriteLines", TextIO.write()
                 .to(options.getOutput().replace(".txt", "")) // Remove extension to let Beam handle it
                 .withSuffix(".txt")
                 .withNumShards(1));
 
         pipeline.run().waitUntilFinish();
+    }
+
+    // Custom filter function to keep lines that contain "William"
+    static SerializableFunction<String, Boolean> containsName(String name) {
+        return line -> line.contains(name);
     }
 
     static class LogOutput<T> extends DoFn<T, T> {
