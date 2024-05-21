@@ -1,3 +1,4 @@
+package com.example;
 
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.options.PipelineOptions;
