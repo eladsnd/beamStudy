@@ -33,8 +33,6 @@ public class aggregationExam {
 
 
 
-
-
     private static class ExtractTaxiRideCostFn extends DoFn<String, Double> {
         @ProcessElement
         public void processElement(ProcessContext c) {
